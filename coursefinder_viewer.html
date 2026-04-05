@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NTU GEM CourseFinder</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #C8102E; --red-dark: #a50d26; --red-light: #fdf0f2;
+    --green: #1a7a4a; --green-light: #dff2e9;
+    --grey-50: #f7f8fa; --grey-100: #f0f2f5; --grey-200: #e4e7ec;
+    --grey-300: #d0d5dd; --grey-500: #98a2b3; --grey-700: #475467; --grey-900: #101828;
+    --mono: 'JetBrains Mono', monospace; --sans: 'Outfit', sans-serif;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.04);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--sans); background: var(--grey-50); color: var(--grey-900); min-height: 100vh; }
+
+  /* ── Header ── */
+  .site-header {
+    background: #0d1117; padding: 14px 32px;
+    display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  }
+  .logo-text {
+    font-family: var(--mono); font-weight: 600; font-size: 14px;
+    color: #fff; letter-spacing: -0.3px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .logo-text .logo-dot { color: var(--red); }
+  .logo-badge {
+    background: var(--red); color: #fff; font-family: var(--mono);
+    font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 4px;
+    letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .header-meta { font-size: 12px; color: #666; border-left: 1px solid #2a2a2a; padding-left: 16px; }
+  .header-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .btn-sm {
+    padding: 6px 14px; border-radius: 6px; font-family: var(--sans);
+    font-size: 12px; font-weight: 500; cursor: pointer; border: none;
+    transition: all 0.15s; letter-spacing: 0.1px;
+  }
+  .btn-export { background: var(--red); color: #fff; }
+  .btn-export:hover { background: var(--red-dark); }
+  .btn-secondary { background: rgba(255,255,255,0.08); color: #ccc; border: 1px solid rgba(255,255,255,0.1); }
+  .btn-secondary:hover { background: rgba(255,255,255,0.14); color: #fff; }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 28px 24px; }
+
+  /* ── Setup layout ── */
+  .setup-wrap {
+    max-width: 520px; margin: 0 auto;
+    min-height: calc(100vh - 57px);
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 48px 0;
+  }
+
+  .setup-hero { text-align: center; margin-bottom: 36px; }
+  .setup-hero-icon {
+    width: 56px; height: 56px; background: var(--red); border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px; font-size: 24px;
+    box-shadow: 0 8px 24px rgba(200,16,46,0.3);
+  }
+  .setup-hero h1 {
+    font-size: 22px; font-weight: 700; color: var(--grey-900);
+    letter-spacing: -0.4px; margin-bottom: 6px;
+  }
+  .setup-hero p { font-size: 14px; color: var(--grey-500); line-height: 1.5; }
+
+  /* ── Card ── */
+  .card {
+    background: #fff; border: 1px solid var(--grey-200); border-radius: 16px;
+    padding: 28px; margin-bottom: 12px;
+    box-shadow: var(--shadow-sm);
+    animation: slideUp 0.3s ease both;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .card-title {
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.2px; color: var(--grey-500);
+    margin-bottom: 18px;
+  }
+
+  /* ── Form fields ── */
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 600;
+    color: var(--grey-700); margin-bottom: 6px; letter-spacing: 0.1px;
+  }
+  .field input {
+    width: 100%; padding: 10px 13px;
+    border: 1.5px solid var(--grey-200); border-radius: 10px;
+    font-family: var(--sans); font-size: 14px; color: var(--grey-900);
+    background: var(--grey-50); outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+  .field input:focus {
+    border-color: var(--red); background: #fff;
+    box-shadow: 0 0 0 3px rgba(200,16,46,0.08);
+  }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    width: 100%; padding: 12px; background: var(--red); color: #fff; border: none;
+    border-radius: 10px; font-family: var(--sans); font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; margin-top: 6px;
+    box-shadow: 0 2px 8px rgba(200,16,46,0.25);
+    letter-spacing: 0.1px;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--red-dark);
+    box-shadow: 0 4px 14px rgba(200,16,46,0.35);
+    transform: translateY(-1px);
+  }
+  .btn-primary:active:not(:disabled) { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+  .btn-scrape {
+    width: 100%; padding: 13px; background: var(--grey-900); color: #fff; border: none;
+    border-radius: 10px; font-family: var(--sans); font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; margin-top: 16px;
+    letter-spacing: 0.1px;
+  }
+  .btn-scrape:hover:not(:disabled) { background: #1d2939; transform: translateY(-1px); }
+  .btn-scrape:active:not(:disabled) { transform: translateY(0); }
+  .btn-scrape:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── Alerts ── */
+  .alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 10px; }
+  .alert-error { background: #fff0f0; border: 1px solid #ffd0d0; color: #8b1a1a; }
+  .alert-info  { background: #f0f8ff; border: 1px solid #c0dcf0; color: #1a4a6b; }
+  .alert-ok    { background: var(--green-light); border: 1px solid #b0dfc0; color: #1a4a2a; }
+
+  /* ── Picker ── */
+  .picker-label {
+    font-size: 13px; font-weight: 600; color: var(--grey-700);
+    margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .picker-label-actions { display: flex; gap: 10px; }
+  .btn-link {
+    background: none; border: none; font-size: 11px; color: var(--red);
+    cursor: pointer; padding: 0; font-weight: 600; font-family: var(--sans);
+  }
+  .btn-link:hover { text-decoration: underline; }
+
+  .picker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .list-box {
+    border: 1.5px solid var(--grey-200); border-radius: 10px; overflow-y: auto;
+    max-height: 230px; background: var(--grey-50);
+  }
+  .list-item {
+    padding: 8px 12px; font-size: 12.5px; cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: 9px;
+    border-bottom: 1px solid var(--grey-100); transition: background 0.1s;
+    color: var(--grey-700);
+  }
+  .list-item:last-child { border-bottom: none; }
+  .list-item:hover { background: #fff5f6; }
+  .list-item.selected { background: #fff5f6; color: var(--red); font-weight: 600; }
+  .list-item .cb {
+    width: 15px; height: 15px; border-radius: 4px;
+    border: 1.5px solid var(--grey-300); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.12s;
+  }
+  .list-item.selected .cb {
+    background: var(--red); border-color: var(--red); color: #fff; font-size: 9px;
+  }
+
+  .selected-summary {
+    margin-top: 12px; padding: 10px 14px;
+    background: var(--grey-50); border: 1px solid var(--grey-200);
+    border-radius: 8px; font-size: 12px; color: var(--grey-700);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .selected-summary strong { color: var(--grey-900); }
+
+  /* ── Progress panel ── */
+  .progress-panel { }
+  .progress-bar-wrap { background: var(--grey-100); border-radius: 99px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+  .progress-bar { height: 100%; background: var(--red); border-radius: 99px; transition: width 0.4s ease; width: 0%; }
+  .progress-label { font-size: 12px; color: var(--grey-700); margin-bottom: 10px; }
+
+  .log-box {
+    background: var(--grey-900); border-radius: 10px; padding: 14px 16px;
+    max-height: 260px; overflow-y: auto; font-family: var(--mono); font-size: 11px;
+    line-height: 1.8; color: #ccc;
+  }
+  .log-box .log-ok     { color: #6fcf97; }
+  .log-box .log-warn   { color: #f2c94c; }
+  .log-box .log-header { color: #56ccf2; font-weight: 700; }
+  .log-box .log-muted  { color: #777; }
+
+  /* ── Results ── */
+  .stats-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat-card { background: #fff; border: 1px solid var(--grey-200); border-radius: 10px; padding: 12px 20px; min-width: 110px; }
+  .stat-num { font-family: var(--mono); font-size: 28px; font-weight: 700; line-height: 1; }
+  .stat-num.total    { color: var(--grey-900); }
+  .stat-num.approved { color: var(--green); }
+  .stat-num.rejected { color: var(--red); }
+  .stat-label { font-size: 10px; color: var(--grey-500); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .disclaimer {
+    background: #fff8e1; border: 1px solid #ffe082; border-left: 4px solid #f9a825;
+    border-radius: 8px; padding: 11px 15px; font-size: 12px; color: #5d4037;
+    margin-bottom: 18px; line-height: 1.6;
+  }
+
+  .toolbar {
+    background: #fff; border: 1px solid var(--grey-200); border-radius: 12px;
+    padding: 16px 20px; margin-bottom: 20px;
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: end;
+  }
+  .filter-group label { display: block; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--grey-700); margin-bottom: 5px; }
+  .filter-group input, .filter-group select {
+    width: 100%; padding: 8px 10px; border: 1.5px solid var(--grey-200); border-radius: 7px;
+    font-family: var(--sans); font-size: 13px; color: var(--grey-900); background: var(--grey-50);
+    outline: none; transition: border-color 0.15s;
+  }
+  .filter-group input:focus, .filter-group select:focus { border-color: var(--red); background: #fff; }
+  .btn-reset {
+    padding: 8px 14px; background: var(--grey-100); border: 1.5px solid var(--grey-200);
+    border-radius: 7px; font-family: var(--sans); font-size: 13px; font-weight: 500;
+    color: var(--grey-700); cursor: pointer; white-space: nowrap;
+  }
+  .btn-reset:hover { background: var(--grey-200); }
+
+  .results-info { font-size: 13px; color: var(--grey-700); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+  .section-header {
+    display: flex; align-items: center; gap: 10px;
+    margin: 22px 0 10px; font-family: var(--mono); font-size: 11px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .section-header.approved { color: var(--green); }
+  .section-header.rejected { color: var(--red); }
+  .section-header::before { content: ''; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-header.approved::before { background: var(--green); }
+  .section-header.rejected::before { background: var(--red); }
+  .section-header::after { content: ''; flex: 1; height: 1px; }
+  .section-header.approved::after { background: var(--green-light); }
+  .section-header.rejected::after { background: var(--red-light); }
+
+  .table-wrap { background: #fff; border: 1px solid var(--grey-200); border-radius: 12px; overflow: hidden; overflow-x: auto; margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: var(--grey-900); }
+  thead th { padding: 11px 13px; text-align: left; font-family: var(--mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #bbb; white-space: nowrap; cursor: pointer; user-select: none; }
+  thead th:hover { color: #fff; }
+  thead th .si { display: inline-block; margin-left: 3px; opacity: 0.35; }
+  thead th.sorted .si { opacity: 1; color: var(--red); }
+  tbody tr { border-bottom: 1px solid var(--grey-100); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr.rejected-row { background: #fff8f9; }
+  tbody tr.data-row { cursor: pointer; }
+  tbody tr.data-row:hover td { background: #f0f4ff; }
+  tbody tr.data-row.expanded td { background: #eef2ff; border-bottom: none; }
+  td { padding: 10px 13px; vertical-align: top; }
+
+  .ntu-code { font-family: var(--mono); font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .ntu-name { font-size: 12px; color: var(--grey-700); line-height: 1.4; }
+  /* chevron styles moved to detail section */
+  .type-badge { display: inline-block; padding: 2px 7px; border-radius: 20px; font-size: 10px; font-weight: 600; text-transform: uppercase; background: var(--grey-100); color: var(--grey-700); white-space: nowrap; margin-top: 3px; }
+  .type-badge.core  { background: #e8f4fd; color: #1565c0; }
+  .type-badge.major { background: #f3e5f5; color: #6a1b9a; }
+  .type-badge.bde   { background: #fff3e0; color: #e65100; }
+  .foreign-code { font-family: var(--mono); font-size: 12px; color: var(--grey-700); white-space: nowrap; }
+  .au-badge { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--grey-700); }
+  .yr { font-family: var(--mono); font-size: 12px; font-weight: 700; }
+  .sm { font-family: var(--mono); font-size: 11px; color: var(--grey-500); }
+  .uni-cell, .cty-cell { font-size: 11px; color: var(--grey-500); }
+
+  tr.detail-row td { padding: 0 !important; border-bottom: 2px solid var(--grey-200); }
+  tr.detail-row.hidden { display: none; }
+
+  .detail-panel { background: #f4f6ff; border-top: 1px solid #dce1f7; }
+  .detail-panel-inner {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+  }
+  .detail-field {
+    padding: 13px 18px; border-right: 1px solid #e0e4f5; border-bottom: 1px solid #e0e4f5;
+  }
+  .detail-field:nth-child(3n) { border-right: none; }
+  .detail-full { grid-column: 1 / -1; border-right: none; }
+  .detail-url  { grid-column: 1 / -1; border-right: none; background: #eef0fb; }
+  .detail-field label {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.7px; color: #8891bb; margin-bottom: 5px;
+  }
+  .detail-field label .licon { font-size: 11px; opacity: 0.8; }
+  .detail-field p { font-size: 12.5px; color: var(--grey-900); line-height: 1.65; white-space: pre-wrap; word-break: break-word; }
+  .detail-field a { color: var(--red); font-size: 12px; word-break: break-all; text-decoration: none; }
+  .detail-field a:hover { text-decoration: underline; }
+  .detail-field.highlight { background: #fffbec; border-left: 3px solid #f9a825; }
+  .detail-field.highlight label { color: #b07b00; }
+  .detail-field.highlight p { color: #5d4037; }
+  .detail-empty { padding: 16px 20px; font-size: 12px; color: var(--grey-500); font-style: italic; grid-column: 1 / -1; }
+  .chevron {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--grey-200); color: var(--grey-700);
+    font-size: 8px; margin-left: 6px;
+    transition: transform 0.2s, background 0.2s; vertical-align: middle; flex-shrink: 0;
+  }
+  tr.data-row.expanded .chevron { transform: rotate(90deg); background: var(--red); color: #fff; }
+
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--grey-500); }
+  .empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+  .empty-state p { font-size: 14px; }
+
+  /* Spinner */
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* view toggles */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  @media (max-width: 900px) {
+    .picker-grid { grid-template-columns: 1fr; }
+    .toolbar { grid-template-columns: 1fr 1fr 1fr; }
+    .btn-reset { grid-column: 1/-1; }
+  }
+  @media (max-width: 600px) {
+    .toolbar { grid-template-columns: 1fr; }
+    .site-header { padding: 12px 16px; }
+    .container { padding: 16px 12px; }
+    .card { padding: 20px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo-text">NTU<span class="logo-dot">.</span>CourseFinder <span class="logo-badge">GEM</span></div>
+  <div class="header-meta" id="headerMeta"></div>
+  <div class="header-right">
+    <button class="btn-sm btn-secondary" id="btnNewScrape" onclick="showView('setup')" style="display:none">← New Scrape</button>
+    <button class="btn-sm btn-export"   id="btnExport"   onclick="exportCSV()"      style="display:none">Export CSV</button>
+  </div>
+</header>
+
+<!-- ── VIEW: Setup ── -->
+<div class="container view active" id="viewSetup">
+  <div class="setup-wrap">
+
+    <!-- Login card -->
+    <div class="setup-hero">
+      <div class="setup-hero-icon">🎓</div>
+      <h1>CourseFinder</h1>
+      <p>Search exchange course approvals across all NTU partner universities at once.</p>
+    </div>
+
+    <div class="card" id="cardLogin">
+      <div class="card-title">NTU Student Login</div>
+      <div class="field-row">
+        <div class="field" style="margin:0"><label>Student ID</label><input id="inStudentId" placeholder="e.g. ABCD1234" autocomplete="username"></div>
+        <div class="field" style="margin:0"><label>Matric Number</label><input id="inMatric" placeholder="e.g. U1234567A"></div>
+      </div>
+      <div class="field" style="margin-top:14px"><label>Password</label><input id="inPassword" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="btn-primary" id="btnLogin" onclick="doLogin()">Sign in</button>
+      <div id="loginAlert" style="display:none"></div>
+    </div>
+
+    <!-- Picker card (hidden until logged in) -->
+    <div class="card" id="cardPicker" style="display:none">
+      <div class="card-title">Select universities to search</div>
+
+      <div class="picker-grid">
+        <div>
+          <div class="picker-label">
+            Countries
+            <div class="picker-label-actions">
+              <button class="btn-link" onclick="selectAllCountries()">All</button>
+              <button class="btn-link" onclick="clearCountries()">Clear</button>
+            </div>
+          </div>
+          <div class="list-box" id="countryList"></div>
+        </div>
+        <div>
+          <div class="picker-label">
+            Universities <span id="uniLoadNote" style="color:var(--grey-500);font-weight:400;font-size:11px"></span>
+            <div class="picker-label-actions">
+              <button class="btn-link" onclick="selectAllUnis()">All</button>
+              <button class="btn-link" onclick="clearUnis()">Clear</button>
+            </div>
+          </div>
+          <div class="list-box" id="uniList"><div style="padding:14px;font-size:12px;color:var(--grey-500)">← Pick a country first</div></div>
+        </div>
+      </div>
+
+      <div class="selected-summary" id="selectedSummary" style="display:none">
+        📍 <span id="selectedSummaryText"></span>
+      </div>
+
+      <button class="btn-scrape" id="btnScrape" onclick="doScrape()" disabled>Scrape selected universities</button>
+      <div id="scrapeAlert" style="display:none"></div>
+    </div>
+
+    <!-- Progress card (hidden until scraping) -->
+    <div class="card" id="cardProgress" style="display:none">
+      <div class="card-title">Scraping in progress</div>
+      <div class="progress-panel">
+        <div class="progress-label" id="progressLabel">Starting…</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+        <div id="logBox" class="log-box"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── VIEW: Results ── -->
+<div class="container view" id="viewResults">
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num total"    id="statTotal">—</div>    <div class="stat-label">Total</div></div>
+    <div class="stat-card"><div class="stat-num approved" id="statApproved">—</div><div class="stat-label">Approved</div></div>
+    <div class="stat-card"><div class="stat-num rejected" id="statRejected">—</div><div class="stat-label">Rejected</div></div>
+    <div class="stat-card"><div class="stat-num total"    id="statCountries" style="font-size:22px;padding-top:4px">—</div><div class="stat-label">Countries</div></div>
+    <div class="stat-card"><div class="stat-num total"    id="statUnis"      style="font-size:22px;padding-top:4px">—</div><div class="stat-label">Universities</div></div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>⚠️ Disclaimer:</strong>
+    COURSEFINDER is a reference database only. Even if a course is listed as approved, <strong>you must still submit your own request</strong>. Approvals can change at any time and are not guaranteed.
+  </div>
+
+  <div class="toolbar">
+    <div class="filter-group"><label>Search</label><input type="text" id="fSearch" placeholder="NTU code, course name, foreign code…"></div>
+    <div class="filter-group"><label>Country</label><select id="fCountry"><option value="">All Countries</option></select></div>
+    <div class="filter-group"><label>University</label><select id="fUni"><option value="">All Universities</option></select></div>
+    <div class="filter-group"><label>NTU Prefix</label><select id="fNtuCode"><option value="">All Codes</option></select></div>
+    <div class="filter-group"><label>Year</label><select id="fYear"><option value="">All Years</option></select></div>
+    <div class="filter-group"><label>Status</label><select id="fStatus"><option value="">All</option><option value="Approved">✅ Approved</option><option value="Rejected">❌ Rejected</option></select></div>
+    <button class="btn-reset" onclick="resetFilters()">Reset</button>
+  </div>
+
+  <div class="results-info">
+    <span>Showing <span class="count" id="resultsCount">—</span> records</span>
+    <span style="font-size:11px;color:var(--grey-500)">Sorted: Year ↓ · Approved first</span>
+  </div>
+
+  <div id="approvedSection">
+    <div class="section-header approved">Approved Requests</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th onclick="sortBy('ntu_code')">NTU Code <span class="si">↕</span></th>
+          <th onclick="sortBy('ntu_name')">NTU Course <span class="si">↕</span></th>
+          <th onclick="sortBy('foreign_code')">Foreign Code <span class="si">↕</span></th>
+          <th>Foreign Course</th><th>AU</th>
+          <th onclick="sortBy('year')">Year <span class="si">↕</span></th><th>Sem</th>
+          <th onclick="sortBy('host_uni')">University <span class="si">↕</span></th>
+          <th onclick="sortBy('country')">Country <span class="si">↕</span></th>
+        </tr></thead>
+        <tbody id="approvedBody"></tbody>
+      </table>
+      <div id="approvedEmpty" class="empty-state" style="display:none"><div class="icon">🔍</div><p>No approved courses match your filters.</p></div>
+    </div>
+  </div>
+
+  <div id="rejectedSection">
+    <div class="section-header rejected">Rejected Requests</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th onclick="sortBy('ntu_code')">NTU Code <span class="si">↕</span></th>
+          <th onclick="sortBy('ntu_name')">NTU Course <span class="si">↕</span></th>
+          <th onclick="sortBy('foreign_code')">Foreign Code <span class="si">↕</span></th>
+          <th>Foreign Course</th><th>AU</th>
+          <th onclick="sortBy('year')">Year <span class="si">↕</span></th><th>Sem</th>
+          <th onclick="sortBy('host_uni')">University <span class="si">↕</span></th>
+          <th onclick="sortBy('country')">Country <span class="si">↕</span></th>
+        </tr></thead>
+        <tbody id="rejectedBody"></tbody>
+      </table>
+      <div id="rejectedEmpty" class="empty-state" style="display:none"><div class="icon">🔍</div><p>No rejected courses match your filters.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  State
+// ═══════════════════════════════════════════════════════
+let RAW_DATA    = [];
+let sortKey     = 'year';
+let sortDir     = -1;
+let authToken   = null;
+let allCountries = [];
+let selectedCountries = new Set();
+let uniMap      = {};   // country → [unis]
+let selectedUnis = new Set();
+let loadingUnis = false;
+
+// ═══════════════════════════════════════════════════════
+//  View switching
+// ═══════════════════════════════════════════════════════
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view' + name[0].toUpperCase() + name.slice(1)).classList.add('active');
+  if (name === 'setup') {
+    document.getElementById('btnNewScrape').style.display = 'none';
+    document.getElementById('btnExport').style.display    = 'none';
+    document.getElementById('cardProgress').style.display = 'none';
+    clearLog();
+    setProgress(0, 'Starting…');
+    const btnScrape = document.getElementById('btnScrape');
+    btnScrape.disabled = selectedUnis.size === 0;
+    btnScrape.textContent = 'Scrape selected universities';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  Login
+// ═══════════════════════════════════════════════════════
+async function doLogin() {
+  const btn = document.getElementById('btnLogin');
+  const studentId = document.getElementById('inStudentId').value.trim();
+  const matric    = document.getElementById('inMatric').value.trim();
+  const password  = document.getElementById('inPassword').value;
+
+  if (!studentId || !matric || !password) {
+    showAlert('loginAlert', 'error', 'Please fill in all fields.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Logging in…';
+  hideAlert('loginAlert');
+
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ student_id: studentId, matric_no: matric, password })
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      showAlert('loginAlert', 'error', data.error || 'Login failed.');
+      btn.disabled = false;
+      btn.textContent = 'Login';
+      return;
+    }
+
+    authToken = data.token;
+    showAlert('loginAlert', 'ok', '✓ Logged in successfully.');
+    btn.textContent = '✓ Logged in';
+
+    await loadCountries();
+    document.getElementById('cardPicker').style.display = '';
+
+  } catch (e) {
+    showAlert('loginAlert', 'error', 'Could not reach server. Is server.py running?');
+    btn.disabled = false;
+    btn.textContent = 'Login';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  Country picker
+// ═══════════════════════════════════════════════════════
+async function loadCountries() {
+  const res = await fetch('/api/countries');
+  allCountries = await res.json();
+  renderCountryList();
+}
+
+function renderCountryList() {
+  const el = document.getElementById('countryList');
+  el.innerHTML = allCountries.map(c => `
+    <div class="list-item ${selectedCountries.has(c) ? 'selected' : ''}" onclick="toggleCountry('${c}')">
+      <div class="cb">${selectedCountries.has(c) ? '✓' : ''}</div>
+      ${c}
+    </div>`).join('');
+}
+
+async function toggleCountry(c) {
+  if (selectedCountries.has(c)) {
+    selectedCountries.delete(c);
+    // Remove its unis from selection
+    (uniMap[c] || []).forEach(u => selectedUnis.delete(`${c}||${u}`));
+  } else {
+    selectedCountries.add(c);
+    await fetchUnisForCountry(c);
+  }
+  renderCountryList();
+  renderUniList();
+  updateScrapeBtn();
+}
+
+function selectAllCountries() {
+  allCountries.forEach(c => selectedCountries.add(c));
+  renderCountryList();
+  fetchAllUnis();
+}
+
+function clearCountries() {
+  selectedCountries.clear();
+  selectedUnis.clear();
+  uniMap = {};
+  renderCountryList();
+  renderUniList();
+  updateScrapeBtn();
+}
+
+// ═══════════════════════════════════════════════════════
+//  University picker
+// ═══════════════════════════════════════════════════════
+async function fetchUnisForCountry(country) {
+  if (uniMap[country]) return;  // already fetched
+  document.getElementById('uniLoadNote').textContent = `loading ${country}…`;
+  try {
+    const res = await fetch('/api/universities', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: authToken, country })
+    });
+    const data = await res.json();
+    uniMap[country] = data.universities || [];
+  } catch {
+    uniMap[country] = [];
+  }
+  document.getElementById('uniLoadNote').textContent = '';
+}
+
+async function fetchAllUnis() {
+  document.getElementById('uniLoadNote').textContent = 'loading all…';
+  for (const c of allCountries) {
+    if (!uniMap[c]) await fetchUnisForCountry(c);
+  }
+  document.getElementById('uniLoadNote').textContent = '';
+  renderUniList();
+  updateScrapeBtn();
+}
+
+function renderUniList() {
+  const el = document.getElementById('uniList');
+  const countries = [...selectedCountries];
+  if (!countries.length) {
+    el.innerHTML = '<div style="padding:12px;font-size:12px;color:var(--grey-500)">Select countries first</div>';
+    return;
+  }
+
+  let html = '';
+  for (const c of countries) {
+    const unis = uniMap[c] || [];
+    if (unis.length) {
+      html += `<div style="padding:5px 12px 2px;font-size:10px;font-weight:700;color:var(--grey-500);text-transform:uppercase;letter-spacing:0.5px;background:var(--grey-100)">${c}</div>`;
+      html += unis.map(u => {
+        const key = `${c}||${u}`;
+        return `<div class="list-item ${selectedUnis.has(key) ? 'selected' : ''}" onclick="toggleUni('${c}','${u.replace(/'/g,"\\'")}')">
+          <div class="cb">${selectedUnis.has(key) ? '✓' : ''}</div>${u}</div>`;
+      }).join('');
+    }
+  }
+  el.innerHTML = html || '<div style="padding:12px;font-size:12px;color:var(--grey-500)">No universities found</div>';
+}
+
+function toggleUni(country, uni) {
+  const key = `${country}||${uni}`;
+  if (selectedUnis.has(key)) selectedUnis.delete(key);
+  else selectedUnis.add(key);
+  renderUniList();
+  updateScrapeBtn();
+}
+
+function selectAllUnis() {
+  for (const c of selectedCountries) {
+    (uniMap[c] || []).forEach(u => selectedUnis.add(`${c}||${u}`));
+  }
+  renderUniList();
+  updateScrapeBtn();
+}
+
+function clearUnis() {
+  selectedUnis.clear();
+  renderUniList();
+  updateScrapeBtn();
+}
+
+function updateScrapeBtn() {
+  const n = selectedUnis.size;
+  document.getElementById('btnScrape').disabled = n === 0;
+  document.getElementById('btnScrape').textContent = n === 0
+    ? 'Scrape selected universities'
+    : `Scrape ${n} universit${n === 1 ? 'y' : 'ies'}`;
+
+  const summary = document.getElementById('selectedSummary');
+  const summaryText = document.getElementById('selectedSummaryText');
+  if (n === 0) {
+    summary.style.display = 'none';
+  } else {
+    const countries = new Set([...selectedUnis].map(k => k.split('||')[0]));
+    summaryText.innerHTML = `<strong>${n}</strong> ${n === 1 ? 'university' : 'universities'} across <strong>${countries.size}</strong> ${countries.size === 1 ? 'country' : 'countries'} selected`;
+    summary.style.display = 'flex';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  Scraping
+// ═══════════════════════════════════════════════════════
+async function doScrape() {
+  if (selectedUnis.size === 0) return;
+
+  // Build plan: { country: [unis] }
+  const plan = {};
+  for (const key of selectedUnis) {
+    const [country, uni] = key.split('||');
+    if (!plan[country]) plan[country] = [];
+    plan[country].push(uni);
+  }
+
+  const courseFilter = '';  // filtering is done post-scrape via fNtuCode dropdown
+
+  // Show progress card
+  document.getElementById('cardProgress').style.display = '';
+  document.getElementById('btnScrape').disabled = true;
+  document.getElementById('btnScrape').innerHTML = '<span class="spinner"></span>Scraping…';
+  document.getElementById('selectedSummary').style.display = 'none';
+  clearLog();
+  setProgress(0, 'Starting…');
+
+  const totalUnis = selectedUnis.size;
+  let doneUnis = 0;
+
+  try {
+    const res = await fetch('/api/scrape', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: authToken, plan, course_filter: courseFilter })
+    });
+
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+
+      const lines = buf.split('\n');
+      buf = lines.pop();  // keep incomplete line
+
+      for (const line of lines) {
+        if (!line.startsWith('data:')) continue;
+        const evt = JSON.parse(line.slice(5).trim());
+
+        if (evt.type === 'start') {
+          log(`<span class="log-header">▶ Scraping ${evt.total} university/universities…</span>`);
+        } else if (evt.type === 'country') {
+          log(`<span class="log-header">→ ${evt.country}</span> <span class="log-muted">(${evt.count} unis)</span>`);
+        } else if (evt.type === 'uni_start') {
+          log(`  <span class="log-muted">·</span> ${evt.uni} …`, false);
+        } else if (evt.type === 'uni_done') {
+          appendLog(` <span class="log-ok">${evt.count} records</span>`);
+          doneUnis = evt.done;
+          setProgress(doneUnis / totalUnis, `${doneUnis} / ${totalUnis} universities done`);
+        } else if (evt.type === 'done') {
+          setProgress(1, `Done — ${evt.total.toLocaleString()} records`);
+          log(`<span class="log-ok">✓ Complete: ${evt.total.toLocaleString()} records</span>`);
+          loadData(evt.data);
+        }
+      }
+    }
+
+  } catch (e) {
+    showAlert('scrapeAlert', 'error', 'Scrape error: ' + e.message);
+    document.getElementById('btnScrape').disabled = false;
+    document.getElementById('btnScrape').textContent = 'Scrape';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  Progress / Log helpers
+// ═══════════════════════════════════════════════════════
+function setProgress(frac, label) {
+  document.getElementById('progressBar').style.width  = Math.round(frac * 100) + '%';
+  document.getElementById('progressLabel').textContent = label;
+}
+
+let _lastLogEl = null;
+function clearLog() { document.getElementById('logBox').innerHTML = ''; _lastLogEl = null; }
+function log(html, newline = true) {
+  const box = document.getElementById('logBox');
+  const span = document.createElement('span');
+  span.innerHTML = (newline ? '' : '') + html + (newline ? '\n' : '');
+  box.appendChild(span);
+  _lastLogEl = span;
+  box.scrollTop = box.scrollHeight;
+}
+function appendLog(html) {
+  if (_lastLogEl) { _lastLogEl.innerHTML += html + '\n'; }
+  document.getElementById('logBox').scrollTop = 9999;
+}
+
+// ═══════════════════════════════════════════════════════
+//  Alert helpers
+// ═══════════════════════════════════════════════════════
+function showAlert(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = `alert alert-${type}`;
+  el.textContent = msg;
+  el.style.display = '';
+}
+function hideAlert(id) { document.getElementById(id).style.display = 'none'; }
+
+// ═══════════════════════════════════════════════════════
+//  Load data into results view
+// ═══════════════════════════════════════════════════════
+function loadData(json) {
+  RAW_DATA = Array.isArray(json) ? json : (json.records || []);
+  const meta = json.meta || {};
+  const scrapedAt = meta.scraped_at
+    ? new Date(meta.scraped_at).toLocaleDateString('en-SG', { day:'numeric', month:'short', year:'numeric' })
+    : 'just now';
+
+  document.getElementById('headerMeta').textContent = `Scraped ${scrapedAt} · ${RAW_DATA.length.toLocaleString()} records`;
+  document.getElementById('btnNewScrape').style.display = '';
+  document.getElementById('btnExport').style.display    = '';
+
+  showView('results');
+  buildFilterOptions();
+  render();
+}
+
+// ═══════════════════════════════════════════════════════
+//  Filters
+// ═══════════════════════════════════════════════════════
+function buildFilterOptions() {
+  const countries = [...new Set(RAW_DATA.map(r => r.country))].filter(Boolean).sort();
+  const prefixes  = [...new Set(RAW_DATA.map(r => (r.ntu_code.match(/^[A-Z]+/) || [''])[0]))].filter(Boolean).sort();
+  const years     = [...new Set(RAW_DATA.map(r => r.year))].filter(Boolean).sort((a,b) => b-a);
+
+  fill('fCountry', countries);
+  fill('fNtuCode', prefixes);
+  fill('fYear', years);
+  rebuildUniFilter();
+
+  document.getElementById('fCountry').onchange = () => { rebuildUniFilter(); render(); };
+  ['fSearch','fUni','fNtuCode','fYear','fStatus'].forEach(id => {
+    const el = document.getElementById(id);
+    el.oninput = el.onchange = render;
+  });
+}
+
+function fill(selectId, values) {
+  const sel = document.getElementById(selectId);
+  const first = sel.options[0];
+  sel.innerHTML = '';
+  sel.appendChild(first);
+  values.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = v; sel.appendChild(o);
+  });
+}
+
+function rebuildUniFilter() {
+  const country = document.getElementById('fCountry').value;
+  const unis = [...new Set(
+    RAW_DATA.filter(r => !country || r.country === country).map(r => r.host_uni)
+  )].filter(Boolean).sort();
+  fill('fUni', unis);
+}
+
+function getFilters() {
+  return {
+    search:  document.getElementById('fSearch').value.toLowerCase().trim(),
+    country: document.getElementById('fCountry').value,
+    uni:     document.getElementById('fUni').value,
+    code:    document.getElementById('fNtuCode').value,
+    year:    document.getElementById('fYear').value,
+    status:  document.getElementById('fStatus').value,
+  };
+}
+
+function filterData() {
+  const f = getFilters();
+  return RAW_DATA.filter(r => {
+    if (f.country && r.country  !== f.country) return false;
+    if (f.uni     && r.host_uni !== f.uni)     return false;
+    if (f.code    && !r.ntu_code.startsWith(f.code)) return false;
+    if (f.year    && r.year     != f.year)     return false;
+    if (f.status  && r.status   !== f.status)  return false;
+    if (f.search) {
+      const hay = `${r.ntu_code} ${r.ntu_name} ${r.foreign_code} ${r.foreign_name} ${r.host_uni} ${r.country}`.toLowerCase();
+      if (!hay.includes(f.search)) return false;
+    }
+    return true;
+  });
+}
+
+function resetFilters() {
+  ['fSearch','fCountry','fUni','fNtuCode','fYear','fStatus'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = el.tagName === 'INPUT' ? '' : el.options[0].value;
+  });
+  rebuildUniFilter();
+  sortKey = 'year'; sortDir = -1;
+  render();
+}
+
+// ═══════════════════════════════════════════════════════
+//  Sort
+// ═══════════════════════════════════════════════════════
+function sortData(data) {
+  return [...data].sort((a, b) => {
+    if (a.status !== b.status) return a.status === 'Approved' ? -1 : 1;
+    let av = a[sortKey], bv = b[sortKey];
+    if (typeof av === 'string') av = av.toLowerCase();
+    if (typeof bv === 'string') bv = bv.toLowerCase();
+    if (av < bv) return sortDir;
+    if (av > bv) return -sortDir;
+    return 0;
+  });
+}
+
+function sortBy(key) {
+  sortDir = (sortKey === key) ? sortDir * -1 : (key === 'year' ? -1 : 1);
+  sortKey = key;
+  render();
+}
+
+// ═══════════════════════════════════════════════════════
+//  Render
+// ═══════════════════════════════════════════════════════
+function render() {
+  const filtered = filterData();
+  const sorted   = sortData(filtered);
+  const approved = sorted.filter(r => r.status === 'Approved');
+  const rejected = sorted.filter(r => r.status === 'Rejected');
+  const f = getFilters();
+
+  renderRows(approved, 'approvedBody');
+  renderRows(rejected, 'rejectedBody');
+
+  document.getElementById('approvedEmpty').style.display = approved.length ? 'none' : 'block';
+  document.getElementById('rejectedEmpty').style.display = rejected.length ? 'none' : 'block';
+  document.getElementById('approvedSection').style.display = (!f.status || f.status === 'Approved') ? '' : 'none';
+  document.getElementById('rejectedSection').style.display = (!f.status || f.status === 'Rejected') ? '' : 'none';
+  document.getElementById('resultsCount').textContent = filtered.length.toLocaleString();
+
+  const total    = RAW_DATA.length;
+  const totApprv = RAW_DATA.filter(r => r.status === 'Approved').length;
+  const totRej   = RAW_DATA.filter(r => r.status === 'Rejected').length;
+  document.getElementById('statTotal').textContent     = total.toLocaleString();
+  document.getElementById('statApproved').textContent  = totApprv.toLocaleString();
+  document.getElementById('statRejected').textContent  = totRej.toLocaleString();
+  document.getElementById('statCountries').textContent = new Set(RAW_DATA.map(r => r.country)).size;
+  document.getElementById('statUnis').textContent      = new Set(RAW_DATA.map(r => r.host_uni)).size;
+
+  document.querySelectorAll('thead th').forEach(th => {
+    const m = th.getAttribute('onclick')?.match(/'([^']+)'/);
+    const key = m?.[1];
+    th.classList.toggle('sorted', key === sortKey);
+    const icon = th.querySelector('.si');
+    if (icon) icon.textContent = (key === sortKey) ? (sortDir === -1 ? '↓' : '↑') : '↕';
+  });
+}
+
+function renderRows(data, tbodyId) {
+  const tbody = document.getElementById(tbodyId);
+  if (!data.length) { tbody.innerHTML = ''; return; }
+
+  tbody.innerHTML = data.map((r, i) => {
+    const id  = `${tbodyId}-${i}`;
+    const rej = r.status === 'Rejected';
+    const hasDetail = r.syllabus || r.comments || r.coordinator_remarks || r.assessment || r.textbooks || r.contact_hours || r.url || r.staff || r.credits;
+    const ch  = hasDetail ? '<span class="chevron">&#9654;</span>' : '';
+
+    const row = `<tr class="data-row${rej?' rejected-row':''}" id="row-${id}" ${hasDetail?`onclick="toggle('${id}')"`:''}}>
+      <td><div class="ntu-code">${esc(r.ntu_code)}${ch}</div></td>
+      <td><div class="ntu-name">${esc(r.ntu_name)}</div>${typeBadge(r.ntu_type)}</td>
+      <td><div class="foreign-code">${esc(r.foreign_code)}</div></td>
+      <td style="font-size:13px;line-height:1.4">${esc(r.foreign_name)}</td>
+      <td><span class="au-badge">${esc(r.au)||'—'}</span></td>
+      <td><span class="yr">${r.year||'—'}</span></td>
+      <td><span class="sm">${r.sem ? 'S'+r.sem : '—'}</span></td>
+      <td><div class="uni-cell">${esc(r.host_uni)}</div></td>
+      <td><div class="cty-cell">${esc(r.country)}</div></td>
+    </tr>`;
+
+    if (!hasDetail) return row;
+
+    const fields = [
+      df('💬', 'Student Comments', r.comments, false, true),
+      df('🏫', 'Coordinator Remarks', r.coordinator_remarks, false, true),
+      df('📋', 'Assessment',       r.assessment),
+      df('⏱',  'Contact Hours',    r.contact_hours),
+      df('🎓', 'Host Credits',     r.credits),
+      df('👤', 'Staff / Instructor', r.staff),
+      dfUrl(r.url),
+      df('📖', 'Syllabus',         r.syllabus, true),
+      df('📚', 'Textbooks',        r.textbooks, true),
+    ].filter(Boolean).join('');
+
+    const inner = fields || '<div class="detail-empty">No additional details available for this record.</div>';
+    const det = `<tr class="detail-row hidden" id="det-${id}"><td colspan="9">
+      <div class="detail-panel"><div class="detail-panel-inner">${inner}</div></div>
+    </td></tr>`;
+
+    return row + det;
+  }).join('');
+}
+
+function toggle(id) {
+  const row = document.getElementById('row-' + id);
+  const det = document.getElementById('det-' + id);
+  if (!row || !det) return;
+  const opening = det.classList.contains('hidden');
+  row.classList.toggle('expanded', opening);
+  det.classList.toggle('hidden', !opening);
+}
+
+// ═══════════════════════════════════════════════════════
+//  Helpers
+// ═══════════════════════════════════════════════════════
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function typeBadge(type) {
+  if (!type) return '';
+  if (type === 'BDE')         return `<span class="type-badge bde">BDE</span>`;
+  if (type === 'Core')        return `<span class="type-badge core">Core</span>`;
+  if (type.includes('Major')) return `<span class="type-badge major">MPE</span>`;
+  return `<span class="type-badge">${esc(type)}</span>`;
+}
+function df(icon, label, value, full=false, highlight=false) {
+  if (!value || value === '-' || value === '—') return '';
+  const cls = `detail-field${full?' detail-full':''}${highlight?' highlight':''}`;
+  return `<div class="${cls}"><label><span class="licon">${icon}</span>${label}</label><p>${esc(value)}</p></div>`;
+}
+function dfUrl(url) {
+  if (!url) return '';
+  return `<div class="detail-field detail-url"><label><span class="licon">🔗</span>Course URL</label><p><a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a></p></div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  CSV Export
+// ═══════════════════════════════════════════════════════
+function exportCSV() {
+  const cols = ['country','host_uni','ntu_code','ntu_name','ntu_type','foreign_code','foreign_name','au','status','year','sem','assessment','contact_hours','credits','comments','coordinator_remarks','staff','url','syllabus','textbooks'];
+  const rows = [cols.join(',')];
+  RAW_DATA.forEach(r => rows.push(cols.map(c => `"${String(r[c]||'').replace(/"/g,'""')}"`).join(',')));
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([rows.join('\n')], { type: 'text/csv' }));
+  a.download = `coursefinder_${Date.now()}.csv`;
+  a.click();
+}
+
+// Enter key on login fields
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !authToken) doLogin();
+});
+</script>
+</body>
+</html>
