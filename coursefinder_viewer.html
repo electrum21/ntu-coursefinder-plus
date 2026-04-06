@@ -365,8 +365,8 @@
     <div class="card" id="cardLogin">
       <div class="card-title">NTU Student Login</div>
       <div class="field-row">
-        <div class="field" style="margin:0"><label>Student ID</label><input id="inStudentId" placeholder="e.g. ABCD1234" autocomplete="username"></div>
-        <div class="field" style="margin:0"><label>Matric Number</label><input id="inMatric" placeholder="e.g. U1234567A"></div>
+        <div class="field" style="margin:0"><label>Student ID</label><input id="inStudentId" placeholder="e.g. ABCD1234" maxlength="8" autocomplete="username"></div>
+        <div class="field" style="margin:0"><label>Matric Number</label><input id="inMatric" placeholder="e.g. U1234567A" maxlength="9"></div>
       </div>
       <div class="field" style="margin-top:14px"><label>Password</label><input id="inPassword" type="password" placeholder="••••••••" autocomplete="current-password"></div>
       <button class="btn-primary" id="btnLogin" onclick="doLogin()">Sign in</button>
@@ -535,6 +535,14 @@ async function doLogin() {
 
   if (!studentId || !matric || !password) {
     showAlert('loginAlert', 'error', 'Please fill in all fields.');
+    return;
+  }
+  if (studentId.length > 8) {
+    showAlert('loginAlert', 'error', 'Student ID must be 8 characters or fewer.');
+    return;
+  }
+  if (matric.length > 9) {
+    showAlert('loginAlert', 'error', 'Matric Number must be 9 characters or fewer.');
     return;
   }
 

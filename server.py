@@ -54,6 +54,10 @@ def api_login():
     password   = body.get("password", "")
     if not student_id or not matric_no or not password:
         return jsonify({"ok": False, "error": "Missing credentials"}), 400
+    if len(student_id) > 8:
+        return jsonify({"ok": False, "error": "Student ID must be 8 characters or fewer"}), 400
+    if len(matric_no) > 9:
+        return jsonify({"ok": False, "error": "Matric Number must be 9 characters or fewer"}), 400
     session = _new_http_session()
     ok, error = _login(session, student_id, password)
     if not ok:
