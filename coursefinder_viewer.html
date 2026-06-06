@@ -323,6 +323,46 @@
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ── CSV Import card ── */
+  .csv-drop-zone {
+    border: 2px dashed var(--grey-300); border-radius: 10px;
+    padding: 20px 16px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--grey-50); margin-bottom: 12px;
+    position: relative;
+  }
+  .csv-drop-zone:hover, .csv-drop-zone.drag-over {
+    border-color: var(--red); background: var(--red-light);
+  }
+  .csv-drop-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .csv-drop-zone .dz-icon { font-size: 28px; margin-bottom: 6px; }
+  .csv-drop-zone .dz-text { font-size: 13px; color: var(--grey-700); font-weight: 500; }
+  .csv-drop-zone .dz-sub  { font-size: 11px; color: var(--grey-500); margin-top: 3px; }
+  .csv-paste-area {
+    width: 100%; min-height: 90px; max-height: 160px; resize: vertical;
+    border: 1.5px solid var(--grey-200); border-radius: 8px;
+    font-family: var(--mono); font-size: 11px; color: var(--grey-900);
+    background: var(--grey-50); padding: 10px 12px; outline: none;
+    transition: border-color 0.15s; line-height: 1.5;
+  }
+  .csv-paste-area:focus { border-color: var(--red); background: #fff; }
+  .csv-paste-area::placeholder { color: var(--grey-500); font-family: var(--sans); font-size: 12px; }
+  .csv-import-btn {
+    width: 100%; padding: 10px; background: var(--grey-900); color: #fff; border: none;
+    border-radius: 8px; font-family: var(--sans); font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: background 0.15s; margin-top: 10px;
+  }
+  .csv-import-btn:hover { background: #1d2433; }
+  .csv-divider {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 11px; font-weight: 600; color: var(--grey-500);
+    text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 14px;
+  }
+  .csv-divider::before, .csv-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--grey-200);
+  }
+
   /* view toggles */
   .view { display: none; }
   .view.active { display: block; }
@@ -347,6 +387,7 @@
   <div class="header-meta" id="headerMeta"></div>
   <div class="header-right">
     <button class="btn-sm btn-secondary" id="btnNewScrape" onclick="showView('setup')" style="display:none">← New Scrape</button>
+    <button class="btn-sm btn-secondary" id="btnImportCsv" onclick="showView('setup');setTimeout(()=>document.getElementById('csvPasteArea').focus(),100)">Import CSV</button>
     <button class="btn-sm btn-export"   id="btnExport"   onclick="exportCSV()"      style="display:none">Export CSV</button>
   </div>
 </header>
@@ -371,6 +412,26 @@
       <div class="field" style="margin-top:14px"><label>Password</label><input id="inPassword" type="password" placeholder="••••••••" autocomplete="current-password"></div>
       <button class="btn-primary" id="btnLogin" onclick="doLogin()">Sign in</button>
       <div id="loginAlert" style="display:none"></div>
+    </div>
+
+    <!-- CSV Import card (always visible, no login needed) -->
+    <div class="card" id="cardCsvImport">
+      <div class="card-title">Import from CSV</div>
+
+      <div class="csv-drop-zone" id="csvDropZone">
+        <input type="file" accept=".csv,text/csv" id="csvFileInput" onchange="onCsvFile(event)">
+        <div class="dz-icon">📂</div>
+        <div class="dz-text">Drop a CSV file here, or click to browse</div>
+        <div class="dz-sub">Must be a CourseFinder export (matching column headers)</div>
+      </div>
+
+      <div class="csv-divider">or paste CSV text</div>
+
+      <textarea class="csv-paste-area" id="csvPasteArea"
+        placeholder="Paste CSV content here (including the header row)…"></textarea>
+
+      <button class="csv-import-btn" onclick="importCsv()">Load CSV →</button>
+      <div id="csvAlert" style="display:none;margin-top:10px"></div>
     </div>
 
     <!-- Picker card (hidden until logged in) -->
@@ -1056,6 +1117,151 @@ function df(icon, label, value, full=false, highlight=false) {
 function dfUrl(url) {
   if (!url) return '';
   return `<div class="detail-field detail-url"><label><span class="licon">🔗</span>Course URL</label><p><a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a></p></div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  CSV Import
+// ═══════════════════════════════════════════════════════
+
+// Wire drag-and-drop on the drop zone
+(function() {
+  const zone = document.getElementById('csvDropZone');
+  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) readCsvFile(file);
+  });
+})();
+
+function onCsvFile(e) {
+  const file = e.target.files[0];
+  if (file) readCsvFile(file);
+  e.target.value = ''; // reset so same file can be re-selected
+}
+
+function readCsvFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('csvPasteArea').value = ev.target.result;
+    importCsv();
+  };
+  reader.readAsText(file);
+}
+
+function importCsv() {
+  const raw = document.getElementById('csvPasteArea').value.trim();
+  if (!raw) {
+    showAlert('csvAlert', 'error', 'Nothing to import — paste CSV text or drop a file.');
+    return;
+  }
+
+  // Minimal RFC-4180 CSV parser (handles quoted fields with commas/newlines)
+  function parseCsv(text) {
+    const rows = [];
+    let row = [], field = '', inQuote = false, i = 0;
+    while (i < text.length) {
+      const ch = text[i];
+      if (inQuote) {
+        if (ch === '"' && text[i+1] === '"') { field += '"'; i += 2; continue; }
+        if (ch === '"') { inQuote = false; i++; continue; }
+        field += ch;
+      } else {
+        if (ch === '"') { inQuote = true; i++; continue; }
+        if (ch === ',') { row.push(field); field = ''; i++; continue; }
+        if (ch === '\r' && text[i+1] === '\n') { row.push(field); rows.push(row); row = []; field = ''; i += 2; continue; }
+        if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
+        field += ch;
+      }
+      i++;
+    }
+    if (field || row.length) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  let rows;
+  try { rows = parseCsv(raw); } catch(e) {
+    showAlert('csvAlert', 'error', 'Could not parse CSV: ' + e.message);
+    return;
+  }
+
+  if (rows.length < 2) {
+    showAlert('csvAlert', 'error', 'CSV must have a header row and at least one data row.');
+    return;
+  }
+
+  // Map column headers → indices (case-insensitive, trim whitespace)
+  const headers = rows[0].map(h => h.trim().toLowerCase());
+  const idx = name => headers.indexOf(name.toLowerCase());
+
+  // Required columns
+  const col = {
+    country:            idx('country'),
+    host_uni:           idx('host_uni'),
+    ntu_code:           idx('ntu_code'),
+    ntu_name:           idx('ntu_name'),
+    ntu_type:           idx('ntu_type'),
+    foreign_code:       idx('foreign_code'),
+    foreign_name:       idx('foreign_name'),
+    au:                 idx('au'),
+    status:             idx('status'),
+    year:               idx('year'),
+    sem:                idx('sem'),
+    assessment:         idx('assessment'),
+    contact_hours:      idx('contact_hours'),
+    credits:            idx('credits'),
+    comments:           idx('comments'),
+    coordinator_remarks:idx('coordinator_remarks'),
+    staff:              idx('staff'),
+    url:                idx('url'),
+    syllabus:           idx('syllabus'),
+    textbooks:          idx('textbooks'),
+  };
+
+  if (col.ntu_code === -1 || col.status === -1) {
+    showAlert('csvAlert', 'error', 'Missing required columns: ntu_code and status must be present.');
+    return;
+  }
+
+  const get = (row, c) => (c >= 0 && c < row.length) ? (row[c] || '').trim() : '';
+
+  const records = rows.slice(1)
+    .filter(row => row.some(cell => cell.trim()))  // skip blank rows
+    .map(row => ({
+      country:             get(row, col.country),
+      host_uni:            get(row, col.host_uni),
+      ntu_code:            get(row, col.ntu_code),
+      ntu_name:            get(row, col.ntu_name),
+      ntu_type:            get(row, col.ntu_type),
+      foreign_code:        get(row, col.foreign_code),
+      foreign_name:        get(row, col.foreign_name),
+      au:                  get(row, col.au),
+      status:              get(row, col.status),
+      year:                Number(get(row, col.year)) || 0,
+      sem:                 get(row, col.sem),
+      assessment:          get(row, col.assessment),
+      contact_hours:       get(row, col.contact_hours),
+      credits:             get(row, col.credits),
+      comments:            get(row, col.comments),
+      coordinator_remarks: get(row, col.coordinator_remarks),
+      staff:               get(row, col.staff),
+      url:                 get(row, col.url),
+      syllabus:            get(row, col.syllabus),
+      textbooks:           get(row, col.textbooks),
+    }))
+    .filter(r => r.ntu_code && r.status);  // must have code + status
+
+  if (!records.length) {
+    showAlert('csvAlert', 'error', 'No valid records found. Check that ntu_code and status columns are filled.');
+    return;
+  }
+
+  hideAlert('csvAlert');
+  loadData({ records, meta: { scraped_at: null, source: 'csv' } });
+  document.getElementById('headerMeta').textContent =
+    `Imported from CSV · ${records.length.toLocaleString()} records`;
 }
 
 // ═══════════════════════════════════════════════════════
